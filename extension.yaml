@@ -2,7 +2,7 @@ title: Sharp Image Processing Extension
 version: 0.0.1
 description: Omnitool extensions wrapping the excellent lovell/sharp image processing library.
 author: Georg Zoeller
-origin: https://github.com/georgzoeller/omni-extension-sharp.git
+origin: https://github.com/omnitool-community/omni-extension-sharp
 dependencies:
   sharp: sharp
 supports:
