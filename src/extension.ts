@@ -22,8 +22,9 @@ import SharpRotationComponent from "./components/SharpRotationComponent"
 import SharpStatsComponent from "./components/SharpStatsComponent"
 import SharpTintComponent from "./components/SharpTintComponent"
 import SharpTrimComponent from "./components/SharpTrimComponent"
-
+import SharpFormatChangeComponent from './components/SharpFormatChangeComponent'
 let components = [
+
   SharpBlurComponent,
   SharpCompositeComponent,
   SharpEnsureAlphaComponent,
@@ -42,6 +43,7 @@ let components = [
   SharpStatsComponent,
   SharpTintComponent,
   SharpTrimComponent,
+  SharpFormatChangeComponent
 ]
 
 export default {

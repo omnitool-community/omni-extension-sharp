@@ -1,8 +1,3 @@
-/**
- * Copyright (c) 2023 MERCENARIES.AI PTE. LTD.
- * All rights reserved.
- */
-
 // components/SharpBlurComponent.ts
 import { OAIBaseComponent, OmniComponentMacroTypes } from "omni-sockets";
 import sharp2 from "sharp";
@@ -56,7 +51,7 @@ blurComponent.addInput(
 blurComponent.setMacro(OmniComponentMacroTypes.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       let buffer = image.data;
@@ -1028,7 +1023,7 @@ var SharpTintComponent_default = SharpTintComponent;
 // components/SharpTrimComponent.ts
 import { OAIBaseComponent as OAIBaseComponent18, OmniComponentMacroTypes as OmniComponentMacroTypes18 } from "omni-sockets";
 import sharp19 from "sharp";
-var NS_OMNI18 = "omnitool";
+var NS_OMNI18 = "sharp";
 var component9 = OAIBaseComponent18.create(NS_OMNI18, "trim").fromScratch().set("description", "Trim pixels from all edges that contain values similar to the given background colour.").set("title", "Trim Image (Sharp)").set("category", "Image Manipulation").setMethod("X-CUSTOM");
 component9.addInput(
   component9.createInput("images", "object", "image", { array: true }).set("description", "The image(s) to operate on").setRequired(true).allowMultiple(true).setControl({
@@ -1069,6 +1064,44 @@ component9.addInput(
 var SharpTrimComponent = component9.toJSON();
 var SharpTrimComponent_default = SharpTrimComponent;
 
+// components/SharpFormatChangeComponent.ts
+import { OAIBaseComponent as OAIBaseComponent19, OmniComponentMacroTypes as OmniComponentMacroTypes19 } from "omni-sockets";
+import sharp20 from "sharp";
+var NS_OMNI19 = "sharp";
+var formatChangeComponent = OAIBaseComponent19.create(NS_OMNI19, "formatChange").fromScratch().set("title", "Change Image Format (Sharp)").set("category", "Image Manipulation").set("description", "Changes an image format").setMethod("X-CUSTOM").setMeta({
+  source: {
+    summary: "Change image format using Sharp",
+    links: {
+      "Sharp Website": "https://sharp.pixelplumbing.com/",
+      "Documentation": "https://sharp.pixelplumbing.com/api-output",
+      "Sharp Github": "https://github.com/lovell/sharp"
+    }
+  }
+});
+formatChangeComponent.addInput(
+  formatChangeComponent.createInput("images", "object", "image", { array: true }).set("title", "Image").set("description", "The image(s) to convert").allowMultiple(true).setRequired(true).toOmniIO()
+).addInput(
+  formatChangeComponent.createInput("format", "string").set("description", "Target format (png, jpeg, webp, etc.)").setChoices(["heif", "avif", "jpeg", "tile", "png", "raw", "tiff", "webp", "gif", "jp2", "jxl"], "png").setRequired(true).toOmniIO()
+).addOutput(
+  formatChangeComponent.createOutput("images", "object", "image", { array: true }).set("title", "Images").set("description", "The converted images").toOmniIO()
+).setMacro(OmniComponentMacroTypes19.EXEC, async (payload, ctx) => {
+  if (payload.images) {
+    let images = await Promise.all(payload.images.map((image) => {
+      return ctx.app.cdn.get(image.ticket);
+    }));
+    let results = await Promise.all(images.map(async (image) => {
+      let buffer = image.data;
+      let result = await sharp20(buffer).toFormat(payload.format).toBuffer();
+      image.data = result;
+      return image;
+    }));
+    payload.images = await writeToCdn_default(ctx, results);
+  }
+  return { images: payload.images };
+});
+var SharpFormatChangeComponent = formatChangeComponent.toJSON();
+var SharpFormatChangeComponent_default = SharpFormatChangeComponent;
+
 // extension.ts
 var components = [
   SharpBlurComponent_default,
@@ -1088,7 +1121,8 @@ var components = [
   SharpRotationComponent_default,
   SharpStatsComponent_default,
   SharpTintComponent_default,
-  SharpTrimComponent_default
+  SharpTrimComponent_default,
+  SharpFormatChangeComponent_default
 ];
 var extension_default = {
   createComponents: () => ({
