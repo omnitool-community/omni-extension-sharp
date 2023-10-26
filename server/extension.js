@@ -112,10 +112,10 @@ component.addInput(
 ).setMacro(OmniComponentMacroTypes2.EXEC, async (payload, ctx) => {
   if (payload.images && payload.compositeImages) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let compositeImages = await Promise.all(payload.compositeImages.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image, index) => {
       image.data = await sharp3(image.data).composite(compositeImages.map((compositeImage) => ({
@@ -162,7 +162,7 @@ ensureAlphaComponent.addInput(
 ).setMacro(OmniComponentMacroTypes3.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       image.data = await sharp4(image.data).ensureAlpha(payload.alpha).toBuffer();
@@ -199,7 +199,7 @@ extractChannelComponent.addInput(
 ).setMacro(OmniComponentMacroTypes4.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       image.data = await sharp5(image.data).extractChannel(payload.channel).toBuffer();
@@ -244,7 +244,7 @@ component2.addInput(
 ).setMacro(OmniComponentMacroTypes5.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       const { left, top, width, height } = payload;
@@ -286,7 +286,7 @@ component3.addInput(
 ).setMacro(OmniComponentMacroTypes6.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       const { left, right, top, bottom, extendWith, background } = payload;
@@ -326,7 +326,7 @@ grayScaleComponent.addInput(
 ).setMacro(OmniComponentMacroTypes7.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       if (payload.grayscale) {
@@ -419,7 +419,7 @@ metadataComponent.addInput(
 ).setMacro(OmniComponentMacroTypes9.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       let md = await sharp10(image.data).metadata();
@@ -462,7 +462,7 @@ modulateComponent.addInput(
 ).setMacro(OmniComponentMacroTypes10.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       const args = { ...payload };
@@ -804,7 +804,7 @@ component7.addInput(
 ).setMacro(OmniComponentMacroTypes13.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       image.data = await sharp14(image.data).removeAlpha().toBuffer();
@@ -855,7 +855,7 @@ resizeComponent.addInput(
 }).setMacro(OmniComponentMacroTypes14.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       let width = payload.width;
@@ -920,7 +920,7 @@ component8.addInput(
 ).setMacro(OmniComponentMacroTypes15.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let background = payload.background || "black";
     let angle = payload.angle || 90;
@@ -961,7 +961,7 @@ statsComponent.addInput(
 ).setMacro(OmniComponentMacroTypes16.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       let md = await sharp17(image.data).stats();
@@ -1002,7 +1002,7 @@ tintComponent.addInput(
 ).setMacro(OmniComponentMacroTypes17.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     const tint = {
       r: parseInt(payload.red),
@@ -1047,7 +1047,7 @@ component9.addInput(
 ).setMacro(OmniComponentMacroTypes18.EXEC, async (payload, ctx) => {
   if (payload.images) {
     let images = await Promise.all(payload.images.map((image) => {
-      return ctx.app.cdn.get(image.ticket);
+      return ctx.app.cdn.get({ fid: image.fid });
     }));
     let results = await Promise.all(images.map(async (image) => {
       if (payload.trimMode === "Background color") {
@@ -1079,7 +1079,7 @@ var formatChangeComponent = OAIBaseComponent19.create(NS_OMNI19, "formatChange")
   }
 });
 formatChangeComponent.addInput(
-  formatChangeComponent.createInput("images", "object", "image", { array: true }).set("title", "Image").set("description", "The image(s) to convert").allowMultiple(true).setRequired(true).toOmniIO()
+  formatChangeComponent.createInput("images", "object", "image", { array: true }).set("title", "Images").set("description", "The image(s) to convert").allowMultiple(true).setRequired(true).toOmniIO()
 ).addInput(
   formatChangeComponent.createInput("format", "string").set("description", "Target format (png, jpeg, webp, etc.)").setChoices(["heif", "avif", "jpeg", "tile", "png", "raw", "tiff", "webp", "gif", "jp2", "jxl"], "png").setRequired(true).toOmniIO()
 ).addOutput(

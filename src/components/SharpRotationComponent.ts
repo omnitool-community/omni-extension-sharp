@@ -66,7 +66,7 @@ component
   .setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
     if (payload.images) {
       let images = await Promise.all(payload.images.map((image: any) =>{
-        return ctx.app.cdn.get(image.ticket)
+        return ctx.app.cdn.get({fid: image.fid})
       }))
       let background = payload.background || 'black'
       let angle = payload.angle || 90

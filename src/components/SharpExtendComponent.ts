@@ -79,7 +79,7 @@ component
   .setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
     if (payload.images) {
       let images = await Promise.all(payload.images.map((image: any) =>{
-        return ctx.app.cdn.get(image.ticket)
+        return ctx.app.cdn.get({fid: image.fid})
       }))
       let results = await Promise.all(images.map(async (image: any) => {
         const { left, right, top, bottom, extendWith, background } = payload

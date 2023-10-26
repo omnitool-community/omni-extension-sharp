@@ -27,7 +27,7 @@ let formatChangeComponent = OAIBaseComponent.create(NS_OMNI, 'formatChange')
 
   formatChangeComponent.addInput(
     formatChangeComponent.createInput('images', 'object', 'image', {array: true})
-      .set('title', 'Image')
+      .set('title', 'Images')
       .set('description', 'The image(s) to convert')
       .allowMultiple(true)
       .setRequired(true)
