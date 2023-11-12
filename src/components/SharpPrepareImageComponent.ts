@@ -12,14 +12,14 @@ const NS_OMNI = 'sharp'
 let component = OAIBaseComponent
   .create(NS_OMNI, 'prepareImage')
   .fromScratch()
-  .set('description', 'Prepare an image for further processing.')
+  .set('description', 'Prepare images for further processing.')
   .set('title', 'Prepare Image (Sharp)')
   .set('category', 'Image Manipulation')
   .setMethod('X-CUSTOM')
 component
   .addInput(
-    component.createInput('image', 'object', 'image')
-      .set('description', 'The image to operate on')
+    component.createInput('image', 'array', 'imageArray')
+      .set('description', 'The image(s) to operate on')
       .set('title', 'Image')
       .setRequired(true)
       .allowMultiple(true)
@@ -29,13 +29,13 @@ component
       .toOmniIO()
   )
   .addOutput(
-    component.createOutput('image', 'object', 'image')
+    component.createOutput('image', 'array', 'imageArray')
       .set('title', 'Image')
-      .set('description', 'The processed image')
+      .set('description', 'The processed image(s)')
       .toOmniIO()
   )
   .addOutput(
-    component.createOutput('mask', 'image', 'image')
+    component.createOutput('mask', 'array', 'imageArray')
       .set('title', 'Mask')
       .toOmniIO()
   )  
@@ -126,7 +126,7 @@ component
     roi?: ROI // Optional: Region-of-Interest or "safe region", e.g. for faces or masks
   }
   
-  async function fetchAndProcessImage(cdnRecord: any, ctx: WorkerContext): Promise<ImageInfo> {
+  async function fetchImage(cdnRecord: any, ctx: WorkerContext): Promise<ImageInfo> {
     const entry = await ctx.app.cdn.get(cdnRecord.ticket)
     const buffer = entry.data
   
@@ -360,9 +360,7 @@ component
   }
 
 
-  component.setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
-    let source = payload.image
-    const target = payload.target
+  async function fetchAndProcessImage(source: any, target: string, ctx: WorkerContext): Promise<{ image: any; mask: Buffer }> {
 
     if (Array.isArray(source)) {
       source = source[0]
@@ -370,7 +368,7 @@ component
 
     const [targetWidth, targetHeight, dpi, fileFormat] = getSize(target)
 
-    let imageInfo = await fetchAndProcessImage(source, ctx)
+    let imageInfo = await fetchImage(source, ctx)
     imageInfo.targetWidth = targetWidth
     imageInfo.targetHeight = targetHeight
 
@@ -400,7 +398,25 @@ component
     const imageData: Buffer = await transform.toBuffer();
 
     return { image: imageData, mask: maskImageData, width: imageInfo.width, height: imageInfo.height }
-  })
+  }
+
+
+  component.setMacro(OmniComponentMacroTypes.EXEC, async (payload: any, ctx: WorkerContext) => {
+    const sources = payload.image;
+    const target = payload.target;
+
+    const processingPromises = sources.map(async (source: any) => await fetchAndProcessImage(source, target, ctx));
+
+    const processedImages = await Promise.all(processingPromises);
+
+    const image = processedImages.map(pi => pi.image);
+    const mask = processedImages.map(pi => pi.mask);
+
+    const [width, height] = getSize(target);
+
+    return { image, mask, width, height };
+  }
+)
 
 const SharpPrepareImageComponent = component.toJSON()
 export default SharpPrepareImageComponent

@@ -527,15 +527,15 @@ var SharpNegateComponent_default = SharpNegateComponent;
 import { OAIBaseComponent as OAIBaseComponent12, OmniComponentMacroTypes as OmniComponentMacroTypes12 } from "omni-sockets";
 import sharp13 from "sharp";
 var NS_OMNI12 = "sharp";
-var component6 = OAIBaseComponent12.create(NS_OMNI12, "prepareImage").fromScratch().set("description", "Prepare an image for further processing.").set("title", "Prepare Image (Sharp)").set("category", "Image Manipulation").setMethod("X-CUSTOM");
+var component6 = OAIBaseComponent12.create(NS_OMNI12, "prepareImage").fromScratch().set("description", "Prepare images for further processing.").set("title", "Prepare Image (Sharp)").set("category", "Image Manipulation").setMethod("X-CUSTOM");
 component6.addInput(
-  component6.createInput("image", "object", "image").set("description", "The image to operate on").set("title", "Image").setRequired(true).allowMultiple(true).setControl({
+  component6.createInput("image", "array", "imageArray").set("description", "The image(s) to operate on").set("title", "Image").setRequired(true).allowMultiple(true).setControl({
     controlType: "AlpineLabelComponent"
   }).toOmniIO()
 ).addOutput(
-  component6.createOutput("image", "object", "image").set("title", "Image").set("description", "The processed image").toOmniIO()
+  component6.createOutput("image", "array", "imageArray").set("title", "Image").set("description", "The processed image(s)").toOmniIO()
 ).addOutput(
-  component6.createOutput("mask", "image", "image").set("title", "Mask").toOmniIO()
+  component6.createOutput("mask", "array", "imageArray").set("title", "Mask").toOmniIO()
 ).addOutput(
   component6.createOutput("width", "number").set("title", "Width").toOmniIO()
 ).addOutput(
@@ -591,7 +591,7 @@ function getSize(value) {
   };
   return sizeMap[value] || [1024, 1024, void 0, "jpg"];
 }
-async function fetchAndProcessImage(cdnRecord, ctx) {
+async function fetchImage(cdnRecord, ctx) {
   const entry = await ctx.app.cdn.get(cdnRecord.ticket);
   const buffer = entry.data;
   const image = sharp13(buffer).rotate();
@@ -757,14 +757,12 @@ async function ExtendWithBlurredBackground(imageInfo) {
     roi: { x0: extendX, y0: extendY, x1: targetWidth - extendX, y1: targetHeight - extendY }
   };
 }
-component6.setMacro(OmniComponentMacroTypes12.EXEC, async (payload, ctx) => {
-  let source = payload.image;
-  const target = payload.target;
+async function fetchAndProcessImage(source, target, ctx) {
   if (Array.isArray(source)) {
     source = source[0];
   }
   const [targetWidth, targetHeight, dpi, fileFormat] = getSize(target);
-  let imageInfo = await fetchAndProcessImage(source, ctx);
+  let imageInfo = await fetchImage(source, ctx);
   imageInfo.targetWidth = targetWidth;
   imageInfo.targetHeight = targetHeight;
   imageInfo = await SoftScale(imageInfo, target);
@@ -786,7 +784,20 @@ component6.setMacro(OmniComponentMacroTypes12.EXEC, async (payload, ctx) => {
   }
   const imageData = await transform.toBuffer();
   return { image: imageData, mask: maskImageData, width: imageInfo.width, height: imageInfo.height };
-});
+}
+component6.setMacro(
+  OmniComponentMacroTypes12.EXEC,
+  async (payload, ctx) => {
+    const sources = payload.image;
+    const target = payload.target;
+    const processingPromises = sources.map(async (source) => await fetchAndProcessImage(source, target, ctx));
+    const processedImages = await Promise.all(processingPromises);
+    const image = processedImages.map((pi) => pi.image);
+    const mask = processedImages.map((pi) => pi.mask);
+    const [width, height] = getSize(target);
+    return { image, mask, width, height };
+  }
+);
 var SharpPrepareImageComponent = component6.toJSON();
 var SharpPrepareImageComponent_default = SharpPrepareImageComponent;
 
